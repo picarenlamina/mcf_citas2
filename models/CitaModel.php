@@ -74,22 +74,24 @@ class CitaModel
     {
         try{
             $this->db->beginTransaction();
+
             
-            $consulta = $this->db->prepare('LOCK TABLES citas_citas WRITE');
-            // $consulta = $this->db->prepare('select * from citas_citas where cita_id = ? for update');
-            // $consulta->bindParam(1, $codigo);
-            // $consulta->execute();
+            //$consulta = $this->db->prepare('LOCK TABLES citas_citas WRITE');
+            $consulta = $this->db->prepare('select * from citas_citas where cita_id = ? for update');
+            $consulta->bindParam(1, $codigo);
+            $consulta->execute();
 
             $consulta = $this->db->prepare('update citas_citas set bloqueo = true where cita_id = ? ');
             $consulta->bindParam(1, $codigo);
             $consulta->execute();
             
-            $consulta = $this->db->prepare('update citas_citas set lock = true where cita_id = ? ');
+            $consulta = $this->db->prepare('update citas_citas set log = ? where cita_id = ? ');
 
             $time = microtime(true);
             $consulta->bindParam(1, $time );
+            $consulta->bindParam(2, $codigo);
             $consulta->execute();
-            $consulta = $this->db->prepare('UNLOCK TABLES');
+           
            
             $this->db->commit();
         }
