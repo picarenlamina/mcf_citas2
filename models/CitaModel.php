@@ -108,23 +108,15 @@ class CitaModel
         try{
             $this->db->beginTransaction();
             
-            $consulta = $this->db->prepare('LOCK TABLES citas_citas WRITE');
-            $consulta = $this->db->prepare('LOCK TABLES citas_reservas WRITE');
+     
             
-            $consulta = $consulta = $this->db->prepare('select * from citas_citas  where bloqueo = true and cita_id not in in ( select cita_id from citas_reservas )');
+            $consulta = $consulta = $this->db->prepare('select * from citas_citas  where bloqueo = true and cita_id not in in ( select cita_id from citas_reservas ) for update);
             $consulta->execute();
             $rows = $consulta->fechAll();
 
-            $consulta = $this->db->prepare('update citas_citas set bloqueo = true where cita_id = ? ');
+            $consulta = $this->db->prepare('update citas_citas set bloqueo = true , log = null where cita_id = ? ');
             $consulta->bindParam(1, $codigo);
             $consulta->execute();
-            
-            $consulta = $this->db->prepare('update citas_citas set lock = true where cita_id = ? ');
-
-            $time = microtime(true);
-            $consulta->bindParam(1, $time );
-            $consulta->execute();
-            $consulta = $this->db->prepare('UNLOCK TABLES');
            
             $this->db->commit();
         }
